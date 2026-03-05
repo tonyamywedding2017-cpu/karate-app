@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Karate Terminology Speaker</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+        }
+        .grid-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        .belt-section {
+            border: 3px solid;
+            background-color: white;
+            border-radius: 8px;
+            display: flex;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .yellow { border-color: #ffd700; }
+        .orange { border-color: #ff8c00; }
+        .blue { border-color: #4169e1; }
+        .green { border-color: #2e8b57; }
+
+        .belt-label {
+            writing-mode: vertical-rl;
+            text-orientation: mixed;
+            transform: rotate(180deg);
+            padding: 10px;
+            font-size: 24px;
+            font-weight: bold;
+            color: white;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .yellow .belt-label { background-color: #ffd700; color: black; }
+        .orange .belt-label { background-color: #ff8c00; }
+        .blue .belt-label { background-color: #4169e1; }
+        .green .belt-label { background-color: #2e8b57; }
+
+        .word-list {
+            padding: 15px;
+            list-style-type: none;
+            margin: 0;
+            width: 100%;
+        }
+        .word-item {
+            padding: 5px 0;
+            cursor: pointer;
+            font-size: 16px;
+            color: #333;
+            transition: color 0.2s, padding-left 0.2s;
+        }
+        .word-item:hover {
+            color: #d32f2f;
+            font-weight: bold;
+            padding-left: 5px;
+        }
+        .playing {
+            color: #d32f2f;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Karate Terminology Audio Guide</h1>
+    <p style="text-align: center;">Click on any English word to hear its Japanese Karate translation.</p>
+
+    <div class="grid-container">
+        <div class="belt-section yellow">
+            <div class="belt-label">Yellow</div>
+            <ul class="word-list" id="yellow-list">
+                </ul>
+        </div>
+
+        <div class="belt-section blue">
+            <div class="belt-label">Blue</div>
+            <ul class="word-list" id="blue-list">
+                </ul>
+        </div>
+
+        <div class="belt-section orange">
+            <div class="belt-label">Orange</div>
+            <ul class="word-list" id="orange-list">
+                </ul>
+        </div>
+
+        <div class="belt-section green">
+            <div class="belt-label">Green</div>
+            <ul class="word-list" id="green-list">
+                </ul>
+        </div>
+    </div>
+
+    <script>
+        // Dictionary mapping English text to correct Japanese Kanji/Kana for accurate Text-To-Speech pronunciation
+        const karateDictionary = {
+            "yellow": [
+                { en: "Numbers 1-10", ja: "いち、に、さん、し、ご、ろく、しち、はち、きゅう、じゅう" },
+                { en: "Karate-Do", ja: "空手道" },
+                { en: "Line up", ja: "整列" },
+                { en: "Attention", ja: "気を付け" },
+                { en: "Yes", ja: "はい" },
+                { en: "Ready", ja: "用意" },
+                { en: "Begin", ja: "始め" },
+                { en: "Stop", ja: "やめ" },
+                { en: "Bow", ja: "礼" },
+                { en: "Thanks", ja: "ありがとう" },
+                { en: "Teacher", ja: "先生" },
+                { en: "Please Teach Me", ja: "お願いします" },
+                { en: "Thank you very much", ja: "ありがとうございました" },
+                { en: "Good night", ja: "おやすみなさい" }
+            ],
+            "orange": [
+                { en: "Training Hall", ja: "道場" },
+                { en: "Student", ja: "生徒" },
+                { en: "Upper", ja: "上段" },
+                { en: "Middle", ja: "中段" },
+                { en: "Lower", ja: "下段" },
+                { en: "Block", ja: "受け" },
+                { en: "Punch", ja: "突き" },
+                { en: "Kick", ja: "蹴り" },
+                { en: "Stance", ja: "立ち" },
+                { en: "Left", ja: "左" },
+                { en: "Right", ja: "右" },
+                { en: "Turn Around", ja: "回って" },
+                { en: "Backwards", ja: "後ろ" },
+                { en: "Switch Sides", ja: "交代" }
+            ],
+            "blue": [
+                { en: "Upper block", ja: "上段受け" },
+                { en: "Middle outward block", ja: "中段外受け" },
+                { en: "Middle inner block", ja: "中段内受け" },
+                { en: "Low block", ja: "下段払い" },
+                { en: "Augmented forearm block", ja: "諸手受け" },
+                { en: "Squat stance", ja: "四股立ち" },
+                { en: "Deep stance", ja: "前屈立ち" },
+                { en: "Cat stance", ja: "猫足立ち" },
+                { en: "Horse riding stance", ja: "騎馬立ち" },
+                { en: "Front kick", ja: "前蹴り" },
+                { en: "Side kick", ja: "横蹴り" },
+                { en: "Roundhouse kick", ja: "回し蹴り" },
+                { en: "Side squat punch", ja: "騎馬立ち突き" },
+                { en: "Front holding punch", ja: "追い突き" },
+                { en: "Front jab punch", ja: "刻み突き" },
+                { en: "Reverse punch", ja: "逆突き" }
+            ],
+            "green": [
+                { en: "Knife hand block", ja: "手刀受け" },
+                { en: "Reverse knife hand block", ja: "逆手刀受け" },
+                { en: "Crane block", ja: "鶴翼受け" },
+                { en: "Feet together", ja: "閉足立ち" },
+                { en: "Natural walking stance", ja: "歩み立ち" },
+                { en: "Cross leg stance", ja: "交差立ち" },
+                { en: "Kaiten ushiro geri", ja: "回転後ろ蹴り" },
+                { en: "Elbow smash", ja: "猿臂打ち" },
+                { en: "Upward elbow smash", ja: "上段猿臂打ち" },
+                { en: "Forward elbow smash", ja: "前猿臂打ち" },
+                { en: "Knife hand strike", ja: "手刀打ち" },
+                { en: "Ridge hand", ja: "背刀" },
+                { en: "Backfist strike", ja: "裏拳打ち" },
+                { en: "Hammer fist strike", ja: "鉄槌打ち" }
+            ]
+        };
+
+        // Function to handle speaking the Japanese text
+        function speakJapanese(japaneseText, listItemElement) {
+            // Cancel any currently playing speech
+            window.speechSynthesis.cancel();
+
+            const utterance = new SpeechSynthesisUtterance(japaneseText);
+            utterance.lang = 'ja-JP'; // Force Japanese voice
+            utterance.rate = 0.85; // Slightly slower for clarity
+            
+            // Visual feedback
+            listItemElement.classList.add('playing');
+            utterance.onend = () => listItemElement.classList.remove('playing');
+
+            window.speechSynthesis.speak(utterance);
+        }
+
+        // Function to populate the lists
+        function populateList(beltColor) {
+            const listElement = document.getElementById(`${beltColor}-list`);
+            const words = karateDictionary[beltColor];
+
+            words.forEach(item => {
+                const li = document.createElement('li');
+                li.className = 'word-item';
+                li.textContent = item.en;
+                li.onclick = () => speakJapanese(item.ja, li);
+                listElement.appendChild(li);
+            });
+        }
+
+        // Initialize lists
+        populateList('yellow');
+        populateList('orange');
+        populateList('blue');
+        populateList('green');
+    </script>
+</body>
+</html>
